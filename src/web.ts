@@ -72,7 +72,7 @@ async function update() {
 
   blocks.forEach((block, i) => {
     const b = getBranch(block)
-    drawBlock(ctx, centerX + b.position * widthByBranch, verticalPaddingTop + heightByBlock * i, 10, block.signature, b.color)
+    drawBlock(ctx, centerX + b.position * widthByBranch, verticalPaddingTop + heightByBlock * i, 5, `${block.signature} - ${block.height}`, b.color)
   })
 
   setTimeout(update, 1000)
