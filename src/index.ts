@@ -43,7 +43,28 @@ interface Db {
   getLastSignature(peer: string): Promise<string>
   getLastBlockForPeer(peer: string): Promise<Block | undefined>
   getBlocksFromEnd(limit: number): Promise<Block[]>
+  processQueue(): Promise<void>
+  enqueue(signature: string, parent: string, peer: string, timestamp: number): Promise<void>
 }
+
+// async function processBlocks(queue: any[], db: MongoClient) {
+//   const blocks = db.db('fork').collection<Block>('blocks')
+
+//   if (queue.length == 0) return
+
+//   const { signature, parent, timestamp, peer, resolve } = queue.shift()
+
+//   const lastBlock = _.getLastBlockForPeer(peer)
+
+//   if (lastBlock && lastBlock.parent == parent && lastBlock.timestamp < timestamp) {
+//     console.log('Pushing block with id: ' + parent)
+//     await blocks.update(
+//       { "_id": lastBlock._id },
+//       { $pull: { peers: peer } },
+//     )
+//     await blocks.remove({ peers: { $size: 0 } }, { single: true })
+//   }
+// }
 
 async function Db(config: Config): Promise<Db> {
 
@@ -54,61 +75,29 @@ async function Db(config: Config): Promise<Db> {
 
   const blocksQueue = []
   const enqueue = (signature, parent, peer, timestamp) => {
-    return new Promise<void>((resolve, _) => {
+    return new Promise<void>(async (resolve, _) => {
+      const blockFromDB = (await blocks.find({}).toArray()).filter(x => x._id == parent)[0]
+      console.log(blockFromDB)
+      const parentBlock = blockFromDB || config.rootBlock
+      await blocks.update(
+        { "_id": signature },
+        { $set: { signature, parent: parentBlock.signature, timestamp, height: parentBlock.height + 1 } },
+        { upsert: true }
+      )
+      await blocks.update(
+        { "_id": signature },
+        { $addToSet: { peers: peer } },
+        { upsert: true }
+      )
       blocksQueue.push({ signature, parent, peer, timestamp, resolve })
-      processQueue()
     })
   }
   let processingQueue = false
-  const processQueue = async () => {
-    if (processingQueue)
-      return
 
-    if (blocksQueue.length == 0)
-      return
-
-    processingQueue = true
-
-    const { signature, parent, timestamp, peer, resolve } = blocksQueue.shift()
-
-    const lastBlock = await _.getLastBlockForPeer(peer)
-    if (lastBlock && lastBlock.parent == parent && lastBlock.timestamp < timestamp) {
-      await blocks.update(
-        { "_id": lastBlock._id },
-        { $pull: { peers: peer } },
-      )
-      await blocks.remove({ peers: { $size: 0 } }, { single: true })
-    }
-
-    try {
-      const parentBlock = (await blocks.find<Block>({ "_id": parent }).limit(1).toArray()[0] as Block) || config.rootBlock
-      if (parentBlock.signature == parent) {
-        await blocks.update(
-          { "_id": signature },
-          { $set: { signature, parent, timestamp, height: parentBlock.height + 1 } },
-          { upsert: true }
-        )
-
-        await blocks.update(
-          { "_id": signature },
-          { $addToSet: { peers: peer } },
-          { upsert: true }
-        )
-        console.log("NEW BLOCK: " + signature)
-      }
-      else {
-        console.log("NO PARENT WITH ID: " + parent)
-      }
-    } catch {
-    }
-
-    resolve()
-
-    processingQueue = false
-    processQueue()
-  }
 
   const _: Db = {
+    enqueue,
+
     getRandomPeer: async () => {
       const query = peers.aggregate(
         [{ $sample: { size: 1 } }]
@@ -116,8 +105,36 @@ async function Db(config: Config): Promise<Db> {
       return (await query.toArray())[0]
     },
 
+    processQueue: async () => {
+      if (processingQueue)
+        return
+
+      if (blocksQueue.length == 0)
+        return
+
+      processingQueue = true
+
+      const { signature, parent, timestamp, peer, resolve } = blocksQueue.shift()
+
+      const lastBlock = await _.getLastBlockForPeer(peer)
+      if (lastBlock && lastBlock.parent == parent && lastBlock.timestamp < timestamp) {
+        console.log('Pushing block with id: ' + parent)
+        await blocks.update(
+          { "_id": lastBlock._id },
+          { $pull: { peers: peer } },
+        )
+        await blocks.remove({ peers: { $size: 0 } }, { single: true })
+      }
+
+
+      resolve()
+
+      processingQueue = false
+
+    },
+
     getBlocksFromEnd: async (limit: number) =>
-      await blocks.find({}).sort({ 'timestamp': -1 }).limit(limit).toArray(),
+      await blocks.find({}).sort({ 'height': -1 }).limit(limit).toArray(),
 
     getLastBlockForPeer: async (peer: string) =>
       (await blocks.find({ 'peers': peer }).sort({ 'timestamp': -1 }).limit(1).toArray())[0] || config.rootBlock,
@@ -249,7 +266,7 @@ function PeerConnection(db: Db, peer: Peer, config: Config): PeerConnection {
       if (readyForSignatures) {
         const lastSig = await db.getLastSignature(peer._id);
         try {
-          const sigs = await (await getConnection()).getSignatures(lastSig)
+          const sigs = (await (await getConnection()).getSignatures(lastSig))
           const time = Date.now()
           for (let i = 1; i < sigs.length; i++) {
             const s = sigs[i];
@@ -310,9 +327,14 @@ async function main() {
 
   const schedule = () => {
     setTimeout(checkAndCreate, 5000)
+    setTimeout(db.processQueue, 100)
   }
 
   schedule()
+
+  // db.enqueue("2riVh5fXhg8yw5fg7zj87ZPyPYQ4SxumjW2Z5io3W3vCxtZR4Dgd59efmYUJvahR56cwNra7qywkDLTg6fscCyLu", "5rGFj4FC72inktB5QtnQYJrU19tJ139P9XoCSmpJrSAFCnuhb5LpsdB127PPcSZXxJgTamkzLeE7NuNNd4DuzGzU", "127.0.0.1", 1533028924752)
+
+  // setTimeout(() => { db.enqueue("hello", "2riVh5fXhg8yw5fg7zj87ZPyPYQ4SxumjW2Z5io3W3vCxtZR4Dgd59efmYUJvahR56cwNra7qywkDLTg6fscCyLu", "127.0.0.1", 1533028924992) },5000)
 
   var app = Express()
 

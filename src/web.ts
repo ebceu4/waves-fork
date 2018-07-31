@@ -29,6 +29,7 @@ interface Block {
   signature: string,
   parent: string,
   timestamp: number,
+  height: number,
   peers: string[]
 }
 
@@ -39,7 +40,7 @@ interface Branch {
 }
 
 async function update() {
-  const blocks: Block[] = await axios.get('http://chains.wavesnodes.com/blocks').then(x => x.data)
+  const blocks: Block[] = await axios.get('http://localhost:3001/blocks').then(x => x.data)
   const canvas = document.getElementById('root') as HTMLCanvasElement
   canvas.width = window.innerWidth
   canvas.height = window.innerHeight * 6
