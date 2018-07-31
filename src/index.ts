@@ -106,7 +106,7 @@ async function Db(config: Config): Promise<Db> {
 
   const enqueue = (signature, parent, peer, timestamp) => {
     return new Promise<void>(async (resolve, _) => {
-      const blockFromDB = (await blocks.find({}).toArray()).filter(x => x._id == parent)[0]
+      const blockFromDB =  (await blocks.find({}).toArray()).filter(x => x._id == parent)[0]//await blocks.find({ "_id" : parent }).limit(1).toArray()[0]
       const parentBlock = blockFromDB || config.rootBlock
       const height = signature == config.rootBlock.signature ? config.rootBlock.height : parentBlock.height + 1
       await blocks.update(

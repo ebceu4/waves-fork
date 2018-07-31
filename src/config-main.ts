@@ -1,8 +1,8 @@
 export const config = {
   rootBlock: {
-    _id: 'vLtt9pd65y4NjkqD8KHwLV6j582K2sKrZwyLjiUFBeRnJHVGKHGCXMNFBbAxzGHX5v7w3kXSe5jmoca6LuE9MgP',
-    signature: 'vLtt9pd65y4NjkqD8KHwLV6j582K2sKrZwyLjiUFBeRnJHVGKHGCXMNFBbAxzGHX5v7w3kXSe5jmoca6LuE9MgP',
-    height: 1106478,
+    _id: '5rGFj4FC72inktB5QtnQYJrU19tJ139P9XoCSmpJrSAFCnuhb5LpsdB127PPcSZXxJgTamkzLeE7NuNNd4DuzGzU',
+    signature: '5rGFj4FC72inktB5QtnQYJrU19tJ139P9XoCSmpJrSAFCnuhb5LpsdB127PPcSZXxJgTamkzLeE7NuNNd4DuzGzU',
+    height: 1078400,
     parent: '',
     timestamp: 0,
     peers: []
