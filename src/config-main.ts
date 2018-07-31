@@ -11,7 +11,7 @@ export const config = {
   port: 6868,
   webPort: 3001,
   //mongoUri: 'mongodb://localhost:27027/',
-  mongoUri: 'mongodb://localhost:27017/',
+  mongoUri: 'mongodb://localhost:37017/',
   initialPeers: ["13.228.86.201",
     "13.229.0.149",
     "18.195.170.147",
