@@ -1,8 +1,8 @@
 export const config = {
   rootBlock: {
-    _id: '5rGFj4FC72inktB5QtnQYJrU19tJ139P9XoCSmpJrSAFCnuhb5LpsdB127PPcSZXxJgTamkzLeE7NuNNd4DuzGzU',
-    signature: '5rGFj4FC72inktB5QtnQYJrU19tJ139P9XoCSmpJrSAFCnuhb5LpsdB127PPcSZXxJgTamkzLeE7NuNNd4DuzGzU',
-    height: 1078400,
+    _id: '4MP7gvXWokcjebGNqXcZoML1EwB9dKtXR7krCot55iuA7xdewXMFivQQWKEybGGUoTRL1ntkCqMYcNzyiwSYc8Vg',
+    signature: '4MP7gvXWokcjebGNqXcZoML1EwB9dKtXR7krCot55iuA7xdewXMFivQQWKEybGGUoTRL1ntkCqMYcNzyiwSYc8Vg',
+    height: 1108050,
     parent: '',
     timestamp: 0,
     peers: []
@@ -10,9 +10,11 @@ export const config = {
   networkPrefix: 'W',
   port: 6868,
   webPort: 3001,
+  api: 'http://localhost:3001',
   //mongoUri: 'mongodb://localhost:27027/',
   mongoUri: 'mongodb://localhost:37017/',
-  initialPeers: ["13.228.86.201",
+  initialPeers: [
+    "13.228.86.201",
     "13.229.0.149",
     "18.195.170.147",
     "34.253.153.4",
@@ -21,7 +23,8 @@ export const config = {
     "52.52.46.76",
     "52.57.147.71",
     "52.214.55.18",
-    "54.176.190.226"]
+    "54.176.190.226"
+  ]
   /*initialPeers:
     ['54.206.73.213',
       '81.241.47.115',
