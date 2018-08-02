@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { config } from './config-main'
 
 const colors = [
   '#001f3f',
@@ -39,8 +40,13 @@ interface Branch {
   color: string
 }
 
+function wrap(t: string, n: number) {
+  if (t.length <= n) return t
+  else return t.slice(0, n)
+}
+
 async function update() {
-  const blocks: Block[] = await axios.get('http://localhost:3001/blocks').then(x => x.data)
+  const blocks: Block[] = await axios.get(`${config.api}/blocks`).then(x => x.data)
   const canvas = document.getElementById('root') as HTMLCanvasElement
   canvas.width = window.innerWidth
   canvas.height = window.innerHeight * 6
@@ -50,7 +56,7 @@ async function update() {
   const widthByBranch = 50
   const verticalPaddingTop = 50
 
-  const centerX = canvas.clientWidth / 2
+  const centerX = canvas.clientWidth / 4
 
   const branches: Branch[] = []
 
@@ -72,7 +78,8 @@ async function update() {
 
   blocks.forEach((block, i) => {
     const b = getBranch(block)
-    drawBlock(ctx, centerX + b.position * widthByBranch, verticalPaddingTop + heightByBlock * i, 5, `${block.signature} - ${block.height}`, b.color)
+    const text = `[Signature: ${wrap(block.signature, 15)}...] \ \n[Parent: ${wrap(block.parent, 15)}...] \ \n[Height: ${block.height}] \ \n[Peers: ${block.peers}]`
+    drawBlock(ctx, centerX + b.position * widthByBranch, verticalPaddingTop + heightByBlock * i, 5, text, b.color)
   })
 
   setTimeout(update, 1000)
